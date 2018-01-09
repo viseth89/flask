@@ -17,9 +17,10 @@
 <div class="tab-content">
   <div role="tabpanel" class="tab-pane fade in active" id="basics">
 	<ul>
-	   <li>{{ TOPIC_DICT }}</li>
-	   <li>jjh</li>
-	   <li>assggg</li>
+        {% for t in TOPIC_DICT['Basics'] %}
+            <li><a href="{{t[1]}}">{{t[0]}}</a></li>
+        {% endfor %}
+
 	</ul>
   </div>
 
