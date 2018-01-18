@@ -71,6 +71,14 @@ def slashboard():
     except Exception as e:
         return render_template('500.html', error=e)
 
+
+
+class RegistrationForm(Form):
+    username = TextField('Username', [validators.Length(min=4,max=20)])
+    email = TextField('Email Address', [validators.Length(min=6,max=50)])
+    password = PasswordField('Password', [validators.Required(),
+    ])
+
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     try:
