@@ -41,7 +41,7 @@ def about():
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login_page():
-    error = None
+    error = ''
     try:
         if request.method == 'POST':
             attempted_username=request.form['username']
