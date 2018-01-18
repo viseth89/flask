@@ -54,9 +54,22 @@
 <!-- removed align=center -->
 <body>
 
-    <div class="container-fluid" style='min-height:100%'>
+    <div class="container" style='min-height:100% width:80%'>
 
-    {% block body %}{% endblock %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-warning alert-dismissible" role="alert">
+                <button type='button' class='close' data-dismiss="alert" aria-label="close">
+                <span aria-hidden=true>&times;</span>
+                </button>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+        {% block body %}{% endblock %}
 
     </div>
     <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
