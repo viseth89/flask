@@ -1,6 +1,7 @@
 from flask import Flask, render_template, flash, request, url_for, redirect
 from content_management import Content
 
+from wtforms import Form
 from dbconnect import connection
 
 TOPIC_DICT = Content()
@@ -21,7 +22,6 @@ def homepage():
 
 @app.route('/dashboard/')
 def dashboard():
-
     flash('flash test!!!')
 
     return render_template('dashboard.html', TOPIC_DICT=TOPIC_DICT)
@@ -31,36 +31,40 @@ def dashboard():
 def page_not_found(e):
     return render_template('404.html')
 
+
 @app.errorhandler(405)
 def method_not_found(e):
     return render_template('405.html')
 
+
 @app.route('/about/')
 def about():
     return (render_template('about.html'))
+
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login_page():
     error = ''
     try:
         if request.method == 'POST':
-            attempted_username=request.form['username']
-            attempted_password=request.form['password']
+            attempted_username = request.form['username']
+            attempted_password = request.form['password']
 
-            #flash(attempted_username)
-            #flash(attempted_password)
+            # flash(attempted_username)
+            # flash(attempted_password)
 
             if attempted_username == 'admin' and attempted_password == 'password':
                 return redirect(url_for('dashboard'))
             else:
-                error ='Invalid credentials. Try Again.'
+                error = 'Invalid credentials. Try Again.'
 
         return render_template('login.html', error=error)
 
 
     except Exception as e:
-        #flash(e)
+        # flash(e)
         return render_template('login.html', error=error)
+
 
 # Slash is only for testing
 
@@ -71,13 +75,26 @@ def slashboard():
     except Exception as e:
         return render_template('500.html', error=e)
 
+
+qualTo('confirm', message='Passwords must match')])
+
+class RegistrationForm(Form):
+    username = TextField('Username', [validators.Length(min=4, max=20)])
+    email = TextField('Email Address', [validators.Length(min=6, max=50)])
+    password = PasswordField('New Password', [validators.Required(),
+                                              validators.EqualTo('confirm', message='Passwords must match')])
+    confirm = PasswordField('Repeat Password')
+    accept_tos = BooleanField('I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)',
+                              [validators.Required()])
+
+
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     try:
         c, conn = connection()
         return ('okay')
     except exception as e:
-        return(str(e))
+        return (str(e))
 
 
 if __name__ == '__main__':
