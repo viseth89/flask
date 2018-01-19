@@ -1,7 +1,12 @@
-from flask import Flask, render_template, flash, request, url_for, redirect
+from flask import Flask, render_template, flash, request, url_for, redirect, session, g
 from content_management import Content
 
 from wtforms import Form
+
+from passlib.hash import sha256_crypt
+
+from MySQLdb import escape_string as thwart
+
 from dbconnect import connection
 
 TOPIC_DICT = Content()
@@ -76,8 +81,6 @@ def slashboard():
         return render_template('500.html', error=e)
 
 
-qualTo('confirm', message='Passwords must match')])
-
 class RegistrationForm(Form):
     username = TextField('Username', [validators.Length(min=4, max=20)])
     email = TextField('Email Address', [validators.Length(min=6, max=50)])
@@ -91,8 +94,40 @@ class RegistrationForm(Form):
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     try:
-        c, conn = connection()
-        return ('okay')
+        form = RegistrationForm(request.form)
+
+        if request.method == 'POST' and form.validate():
+            username = form.username.data
+            email = form.email.data
+            password = sha256_crypt.encrypt((str(form.password.data)))
+            c, conn = connection()
+
+            x=c.excecute('SELECT * FROM users WHERE username = (%s)'),
+            (thwart(username)) 
+            #video 16
+            if int(len(x)) > 0:
+                flash("That username is already taken, please choose another")
+                return render_template("register.html", form=form)
+            else:
+                c.execute("INSERT INTO users (username, password, email, tracking) VALUES (%s, %s, %s, %s)",
+                    (thwart(username), thwart(password), thwart(email), thwart('/introduction-to-python-programming/')))
+
+                conn.commit()
+
+                flash('Thanks for registering!')
+
+                c.close()
+                conn.close()
+                # garbage collection 
+                gc.collect()
+
+                session['logged_in']=True
+                session['username']=username
+
+                return redirect(url_for('dashboard'))
+        return render_template('register.html',form=form)
+
+
     except exception as e:
         return (str(e))
 
