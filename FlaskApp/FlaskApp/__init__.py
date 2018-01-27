@@ -2,13 +2,14 @@ from flask import Flask, render_template, flash, request, url_for, redirect, ses
 from content_management import Content
 
 from flask_wtf import Form
-from wtforms import TextField, BooleanField, validators, PasswordField
+from wtforms import TextField, BooleanField, validators, PasswordField, Form
 
 from passlib.hash import sha256_crypt
 
 from MySQLdb import escape_string as thwart
 
 from dbconnect import connection
+import gc
 
 
 
@@ -175,6 +176,45 @@ def register_page():
 
     except Exception as e:
         return (str(e))
+
+# @app.route('/register/', methods=["GET", "POST"])
+# def register_page():
+#     try:
+#         form = RegistrationForm(request.form)
+#
+#         if request.method == "POST" and form.validate():
+#             username = form.username.data
+#             email = form.email.data
+#             password = sha256_crypt.encrypt((str(form.password.data)))
+#             c, conn = connection()
+#
+#             x = c.execute("SELECT * FROM users WHERE username = (%s)",
+#                           (thwart(username)))
+#
+#             if int(x) > 0:
+#                 flash("That username is already taken, please choose another")
+#                 return render_template('register.html', form=form)
+#
+#             else:
+#                 c.execute("INSERT INTO users (username, password, email, tracking) VALUES (%s, %s, %s, %s)",
+#                           (thwart(username), thwart(password), thwart(email),
+#                            thwart("/introduction-to-python-programming/")))
+#
+#                 conn.commit()
+#                 flash("Thanks for registering!")
+#                 c.close()
+#                 conn.close()
+#                 gc.collect()
+#
+#                 session['logged_in'] = True
+#                 session['username'] = username
+#
+#                 return redirect(url_for('dashboard'))
+#
+#         return render_template("register.html", form=form)
+#
+#     except Exception as e:
+#         return (str(e))
 
 
 if __name__ == '__main__':
