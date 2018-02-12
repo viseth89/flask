@@ -1,6 +1,7 @@
 from flask import Flask, render_template, flash, request, url_for, redirect, session, g
 from content_management import Content
 
+from functools import wraps
 from flask_wtf import Form
 from wtforms import TextField, BooleanField, validators, PasswordField, Form
 from passlib.hash import sha256_crypt
@@ -44,18 +45,36 @@ def about():
     return (render_template('about.html'))
 
 
+def login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('you need to login first')
+            return redirect(url_for('login_page'))
+
+    return wrap
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    session.clear()
+    flash('You have been logged out!')
+    gc.collect()
+    return redirect(url_for('homepage'))
+
 @app.route('/login/', methods=['GET', 'POST'])
 def login_page():
     error = ''
     try:
         c, conn=connection()
         if request.method == 'POST':
-            data = c.execute('SELET * FROM users WHERE username = (%s)',
+
+            data = c.execute('SELECT * FROM users WHERE username = (%s)',
                              thwart(request.form['username']))
             data = c.fetchone()[2]
-
-            if int(x) == 0:
-                error = 'Invalid Credentials, try again.'
 
             if sha256_crypt.verify(request.form['password'], data) :
                 session['logged_in'] = True
@@ -64,7 +83,7 @@ def login_page():
                 flash('You are now logged in')
                 return redirect(url_for('dashboard'))
             else:
-                error = 'Invalid credentials, try again.'
+                error = 'Invalid credentials check Your Password, try again.'
 
         gc.collect()
 
@@ -72,17 +91,8 @@ def login_page():
 
     except Exception as e:
         # flash(e)
-        error = 'Invalid credentials, try again.'
+        error = 'Invalid credentials, Check your username try again.'
         return render_template('login.html', error=error)
-
-# Slash is only for testing
-
-@app.route('/slashboard/')
-def slashboard():
-    try:
-        return render_template('dashboard.html', TOPIC_DICT=shamwow)
-    except Exception as e:
-        return render_template('500.html', error=e)
 
 
 class RegistrationForm(Form):
@@ -132,6 +142,17 @@ def register_page():
 
     except Exception as e:
         return (str(e))
+
+
+# # Slash is only for testing
+#
+# @app.route('/slashboard/')
+# def slashboard():
+#     try:
+#         return render_template('dashboard.html', TOPIC_DICT=shamwow)
+#     except Exception as e:
+#         return render_template('500.html', error=e)
+
 
 
 if __name__ == '__main__':
